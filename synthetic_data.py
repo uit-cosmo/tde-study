@@ -73,8 +73,49 @@ def make_2d_realization(rp: RunParameters):
         t_drain=rp.taup,
         blob_factory=bf,
         verbose=False,
+        t_init=10
     )
     update_geometry(xpoints, ypoints, model)
+    return model.make_realization(speed_up=True, error=1e-10)
+
+
+def make_2d_realization_full_resolution(rp: RunParameters):
+    p0x, p0y = 1, 5
+    if rp.sigma is not None:
+        bf = RandomVelocityBlobFactory(
+            vx_parameter=rp.vx,
+            vy_parameter=rp.vy,
+            wx_parameter=rp.wx,
+            wy_parameter=rp.wy,
+            blob_alignment=rp.blob_alignment,
+            sigma=rp.sigma,
+        )
+    else:
+        bf = DefaultBlobFactory(
+            A_dist=DistributionEnum.deg,
+            vy_parameter=rp.vy,
+            vx_parameter=rp.vx,
+            wx_parameter=rp.wx,
+            wy_parameter=rp.wy,
+            blob_alignment=rp.blob_alignment,
+        )
+    if rp.theta != 0:
+        bf.set_theta_setter(lambda: rp.theta)
+    model = Model(
+        Nx=int(rp.Lx/rp.delta),
+        Ny=int(rp.Ly/rp.delta),
+        Lx=rp.Lx,
+        Ly=rp.Ly,
+        dt=rp.dt,
+        T=rp.T,
+        num_blobs=rp.K,
+        blob_shape=BlobShapeImpl(rp.bs_prop, rp.bs_perp),
+        periodic_y=False,
+        t_drain=rp.taup,
+        blob_factory=bf,
+        verbose=False,
+        t_init=10
+    )
     return model.make_realization(speed_up=True, error=1e-10)
 
 
