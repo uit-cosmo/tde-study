@@ -73,7 +73,7 @@ def make_2d_realization(rp: RunParameters):
         t_drain=rp.taup,
         blob_factory=bf,
         verbose=False,
-        t_init=10
+        t_init=10,
     )
     update_geometry(xpoints, ypoints, model)
     return model.make_realization(speed_up=True, error=1e-10)
@@ -102,8 +102,8 @@ def make_2d_realization_full_resolution(rp: RunParameters):
     if rp.theta != 0:
         bf.set_theta_setter(lambda: rp.theta)
     model = Model(
-        Nx=int(rp.Lx/rp.delta),
-        Ny=int(rp.Ly/rp.delta),
+        Nx=int(rp.Lx / rp.delta),
+        Ny=int(rp.Ly / rp.delta),
         Lx=rp.Lx,
         Ly=rp.Ly,
         dt=rp.dt,
@@ -114,7 +114,7 @@ def make_2d_realization_full_resolution(rp: RunParameters):
         t_drain=rp.taup,
         blob_factory=bf,
         verbose=False,
-        t_init=10
+        t_init=10,
     )
     return model.make_realization(speed_up=True, error=1e-10)
 

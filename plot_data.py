@@ -1,4 +1,5 @@
 from synthetic_data import *
+from utils import *
 import json
 import matplotlib.pyplot as plt
 import cosmoplots as cp
@@ -519,6 +520,28 @@ with open("data/full_outputs9.json", "r") as file:
 with open("data/full_outputs9_delta.json", "r") as file:
     full_outputs_delta = deserialize_full_outputs(json.load(file))
 
+tilts_fine = np.arange(-np.pi / 2, np.pi / 2, step=np.pi / 500)
+v3a = np.array([v3(1, 4, 1, 0, t) for t in tilts_fine])
+w3a = np.array([w3(1, 4, 1, 0, t) for t in tilts_fine])
+msea = (v3a - 1) ** 2 + w3a**2
+
+v3b = np.array([v3(4, 1, 1, 0, t) for t in tilts_fine])
+w3b = np.array([w3(4, 1, 1, 0, t) for t in tilts_fine])
+mseb = (v3b - 1) ** 2 + w3b**2
+
+v3c = np.array([v3(1, 1.5, 1, 0, t) for t in tilts_fine])
+w3c = np.array([w3(1, 1.5, 1, 0, t) for t in tilts_fine])
+msec = (v3c - 1) ** 2 + w3c**2
+
+v3d = np.array([v3(1, 2, 1, 0, t) for t in tilts_fine])
+w3d = np.array([w3(1, 2, 1, 0, t) for t in tilts_fine])
+msed = (v3d - 1) ** 2 + w3d**2
+
+ax[0].plot(tilts_fine, msea, color="blue", ls="--")
+ax[0].plot(tilts_fine, mseb, color="red", ls="--")
+ax[0].plot(tilts_fine, msec, color="green", ls="--")
+ax[0].plot(tilts_fine, msed, color="black", ls="--")
+
 average_confidence = get_confidence_for_slice(full_outputs, 1)
 index_cc_fail = np.argmax(average_confidence < 0.25)
 ax[0].fill_between(
@@ -528,17 +551,65 @@ ax[1].fill_between(
     tilts9[average_confidence < 0.25], -0.5, 1.1, color="lightgray", alpha=0.5
 )
 
+average_confidence = get_confidence_for_slice(full_outputs, 0)
+index_cc_fail = np.argmax(np.logical_and(average_confidence < 0.25, tilts9 > 0))
+ax[0].fill_between(
+    tilts9[np.logical_and(average_confidence < 0.25, tilts9 < 0)],
+    -0.5,
+    1.1,
+    color="lightgray",
+    alpha=0.5,
+    edgecolor="none",
+)
+ax[1].fill_between(
+    tilts9[np.logical_and(average_confidence < 0.25, tilts9 < 0)],
+    -0.5,
+    1.1,
+    color="lightgray",
+    alpha=0.5,
+    edgecolor="none",
+)
+ax[0].fill_between(
+    [tilts9[index_cc_fail], np.pi / 2],
+    -0.5,
+    1.1,
+    color="lightgray",
+    alpha=0.5,
+    edgecolor="none",
+)
+ax[1].fill_between(
+    [tilts9[index_cc_fail], np.pi / 2],
+    -0.5,
+    1.1,
+    color="lightgray",
+    alpha=0.5,
+    edgecolor="none",
+)
+
+labela = r"$\ell_\shortparallel/\ell_\perp=1/4$"
+labelb = r"$\ell_\shortparallel/\ell_\perp=4$"
+labelc = r"$\ell_\shortparallel/\ell_\perp=2/3$"
+labeld = r"$\ell_\shortparallel/\ell_\perp=1/2$"
+
 ax[0].scatter(
     tilts9,
     get_mse_for_slice(full_outputs, 0),
     color="blue",
-    label=r"$\ell_\shortparallel/\ell_\perp=1/4$",
 )
 ax[0].scatter(
     tilts9,
     get_mse_for_slice(full_outputs, 1),
     color="red",
-    label=r"$\ell_\shortparallel/\ell_\perp=4$",
+)
+ax[0].scatter(
+    tilts9,
+    get_mse_for_slice(full_outputs, 2),
+    color="green",
+)
+ax[0].scatter(
+    tilts9,
+    get_mse_for_slice(full_outputs, 3),
+    color="black",
 )
 ax[0].scatter(
     tilts9, get_mse_for_slice(full_outputs_delta, 0), color="blue", marker="v"
@@ -546,8 +617,10 @@ ax[0].scatter(
 ax[0].scatter(tilts9, get_mse_for_slice(full_outputs_delta, 1), color="red", marker="v")
 ax[0].hlines(0.1, np.min(tilts9), np.max(tilts9), color="black", ls="--", lw=0.5)
 
-ax[1].scatter(tilts9, get_std_for_slice(full_outputs, 0), color="blue")
-ax[1].scatter(tilts9, get_std_for_slice(full_outputs, 1), color="red")
+ax[1].scatter(tilts9, get_std_for_slice(full_outputs, 0), color="blue", label=labela)
+ax[1].scatter(tilts9, get_std_for_slice(full_outputs, 1), color="red", label=labelb)
+ax[1].scatter(tilts9, get_std_for_slice(full_outputs, 2), color="green", label=labelc)
+ax[1].scatter(tilts9, get_std_for_slice(full_outputs, 3), color="black", label=labeld)
 ax[1].scatter(
     tilts9, get_std_for_slice(full_outputs_delta, 0), color="blue", marker="v"
 )
@@ -568,7 +641,7 @@ ax[1].set_xlabel(r"$\theta$")
 ax[1].set_xticks([-np.pi / 2, -np.pi / 4, 0, np.pi / 4, np.pi / 2])
 ax[1].set_xticklabels([r"$-\pi/2$", r"$-\pi/4$", 0, r"$\pi/4$", r"$\pi/2$"])
 
-ax[0].legend(loc=1)
+ax[1].legend(loc=1)
 
 plt.savefig("method_study_tilt.eps", bbox_inches="tight")
 
@@ -660,3 +733,55 @@ ax[0].set_ylim(-0.1, 1)
 ax[1].set_ylim(-0.1, 1)
 
 plt.savefig("method_study_rnd_sizes.eps", bbox_inches="tight")
+
+# Analytical barberpole effect
+
+lpara = 1
+lperp = 4
+v = 1
+w = 0
+a = np.arange(-np.pi / 2, np.pi / 2, step=np.pi / 500)
+
+fig, axes = cp.figure_multiple_rows_columns(1, 2)
+
+ax = axes[0]
+values = 1 / taumax(1, 0, lpara, lperp, v, w, a)
+ax.plot(a[values < 0], values[values < 0], label=r"$\wh{v}$", color="blue")
+ax.plot(a[values > 0], values[values > 0], color="blue")
+
+values = 1 / taumax(0, 1, lpara, lperp, v, w, a)
+ax.plot(a[values < 0], values[values < 0], label=r"$\wh{w}$", color="red")
+ax.plot(a[values > 0], values[values > 0], color="red")
+ax.plot(a, v3(lpara, lperp, v, w, a), color="blue", ls="--")
+ax.plot(a, w3(lpara, lperp, v, w, a), color="red", ls="--")
+
+ax.set_ylabel(r"$\wh{v}, \, \wh{w}$")
+ax.set_xlabel(r"$\alpha$")
+ax.set_xticks([-np.pi / 2, -np.pi / 4, 0, np.pi / 4, np.pi / 2])
+ax.set_xticklabels([r"$-\pi/2$", r"$-\pi/4$", 0, r"$\pi/4$", r"$\pi/2$"])
+ax.legend(loc=4)
+ax.set_ylim(-2, 2)
+ax.text(s=r"$\ell_\shortparallel/\ell_\perp=1/4$", x=-1.6, y=1.6, size=6)
+
+ax = axes[1]
+lpara = 4
+lperp = 1
+values = 1 / taumax(1, 0, lpara, lperp, v, w, a)
+ax.plot(a[values < 0], values[values < 0], label=r"$\wh{v}_2$", color="blue")
+ax.plot(a[values > 0], values[values > 0], color="blue")
+
+values = 1 / taumax(0, 1, lpara, lperp, v, w, a)
+ax.plot(a[values < 0], values[values < 0], color="red")
+ax.plot(a[values > 0], values[values > 0], color="red")
+ax.plot(a, v3(lpara, lperp, v, w, a), label=r"$\wh{v}_3$", color="blue", ls="--")
+ax.plot(a, w3(lpara, lperp, v, w, a), color="red", ls="--")
+
+ax.set_ylabel(r"$\wh{v}, \, \wh{w}$")
+ax.set_xlabel(r"$\alpha$")
+ax.set_xticks([-np.pi / 2, -np.pi / 4, 0, np.pi / 4, np.pi / 2])
+ax.set_xticklabels([r"$-\pi/2$", r"$-\pi/4$", 0, r"$\pi/4$", r"$\pi/2$"])
+ax.legend(loc=3)
+ax.set_ylim(-2, 2)
+ax.text(s=r"$\ell_\shortparallel/\ell_\perp=4$", x=1, y=1.6, size=6)
+
+plt.savefig("analytical_barberpole.eps", bbox_inches="tight")

@@ -55,7 +55,7 @@ wxs8 = np.sqrt(aspect_ratios8)
 # Tilting
 
 tilts9 = np.arange(-np.pi / 2, np.pi / 2, step=np.pi / 50)
-aspect_ratios9 = np.array([1 / 4, 4])
+aspect_ratios9 = np.array([1 / 4, 4, 2 / 3, 1 / 2])
 wxs9 = np.sqrt(aspect_ratios9)
 
 # Linear damping
